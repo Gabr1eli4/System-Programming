@@ -11,7 +11,7 @@ using namespace std;
 namespace fs = std::filesystem;
 
 // const string dir = "D:/Университет/Системное Программирование/lb6/";
-const string dir = fs::current_path().string() + "/";
+const string dir = fs::current_path().string() + "\\";
 
 void printOptions() {
   cout << "1. Создать файл" << endl;
@@ -33,7 +33,7 @@ bool accept(string message) {
   char answer;
   cout << message << "Продолжить? (y/n): ";
   cin >> answer;
-  return strcmp(&answer, "y") == 0 || strcmp(&answer, "Y") == 0;
+  return answer == 'y';
 }
 
 int main(int argc, LPTSTR argv[]) {
@@ -134,10 +134,16 @@ int main(int argc, LPTSTR argv[]) {
 
         try {
           string message = "Папка уже существует.";
+          cout << "dir - " << dir << endl;
+          cout << "dir + dirName = " << dir + dirName << endl;
 
-          if (fs::exists(dir + dirName) && accept(message)) {
+          if (fs::exists(dir + dirName)) {
+            if (accept(message)) {
+              fs::create_directory(dir + dirName);
+              cout << "Папка успешно создана" << endl;
+            }
+          } else {
             fs::create_directory(dir + dirName);
-            cout << "Папка успешно создана\n" << endl;
           }
           printOptions();
         } catch (const fs::filesystem_error& e) {
@@ -178,12 +184,18 @@ int main(int argc, LPTSTR argv[]) {
 
         try {
           string message = "Папка уже существует.";
-          if (fs::exists(dir + copyDirName) && accept(message)) {
-            break;
+          if (fs::exists(dir + copyDirName)) {
+            if (accept(message)) {
+              fs::remove_all(dir + copyDirName);
+              fs::copy(dir + dirName, dir + copyDirName,
+                       fs::copy_options::recursive |
+                           fs::copy_options::overwrite_existing);
+            }
+          } else {
+            fs::copy(dir + dirName, dir + copyDirName,
+                     fs::copy_options::recursive |
+                         fs::copy_options::overwrite_existing);
           }
-          fs::copy(
-              dir + dirName, dir + copyDirName,
-              fs::copy_options::update_existing | fs::copy_options::recursive);
           cout << "Папка успешно скопирована\n" << endl;
           printOptions();
         } catch (const fs::filesystem_error& e) {
